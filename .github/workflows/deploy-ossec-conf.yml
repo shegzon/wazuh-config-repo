@@ -1,0 +1,28 @@
+name: Deploy ossec.conf
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Copy ossec.conf to Wazuh manager
+        run: |
+          scp ./ossec.conf root@192.168.227.104:/var/ossec/etc/ossec.conf
+      
+      - name: Restart Wazuh manager service
+        run: |
+          ssh root@192.168.227.104 'sudo systemctl restart wazuh-manager'
+
